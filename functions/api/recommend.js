@@ -26,9 +26,10 @@ export async function onRequestPost({ request, env }) {
     }
     return Response.json({ response: answer });
   } catch (error) {
-    return Response.json(
-      { error: "سرویس پیشنهاد کتاب موقتاً در دسترس نیست؛ کمی بعد دوباره امتحان کن." },
-      { status: 500 }
-    );
+  console.error("Book recommendation API error:", error);
+
+  return Response.json(
+    { error: "سرویس پیشنهاد کتاب موقتاً در دسترس نیست؛ کمی بعد دوباره امتحان کن." },
+    { status: 500 }
+  );
   }
-}
