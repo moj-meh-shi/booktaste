@@ -22,7 +22,16 @@ export async function onRequestPost({ request, env }) {
       response_format: { type: "json_object" }
     });
 
-    const answer = typeof result === "string" ? result : result?.response;
+    const answer =
+  typeof result === "string"
+    ? result
+    : typeof result?.response === "string"
+      ? result.response
+      : result?.response != null
+        ? JSON.stringify(result.response)
+        : result?.output != null
+          ? JSON.stringify(result.output)
+          : "";
     if (typeof answer !== "string" || !answer.trim()) {
       return Response.json({ error: "پاسخی دریافت نشد؛ دوباره امتحان کن." }, { status: 502 });
     }
