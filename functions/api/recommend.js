@@ -17,7 +17,9 @@ export async function onRequestPost({ request, env }) {
       prompt:
         "Follow the user's instructions exactly. If they request JSON only, return valid JSON only, without Markdown fences or extra commentary.\n\n" +
         prompt,
-      max_tokens: 3000
+            max_tokens: 3000,
+      temperature: 0.2,
+      response_format: { type: "json_object" }
     });
 
     const answer = typeof result === "string" ? result : result?.response;
