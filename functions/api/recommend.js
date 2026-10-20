@@ -57,12 +57,16 @@ If a title is ambiguous or unfamiliar, set its known to false, explain in note a
 For known inputs, recommend exactly SIX distinct real books. Never recommend the input books, alternate translations of them, or excluded books. Each pick MUST connect specific themes from BOTH inputs. Keep descriptions concise (one sentence per field). Do not merely say similar style.
 Use Persian letters for title_fa and author. Use a recognized published Persian title when known; otherwise translate the title and use fa_published: unsure. stars is your confidence in bibliographic identity, not popularity; include only books rated 4 or 5. Never invent metadata to fill six slots.
 Categories: ${TYPES.join(', ')}. Prefer a mix with at most 2 fiction books, at least 2 nonfiction and 1 science when thematically appropriate; do not force irrelevant books. Rarity never overrides accuracy.`;
+const infoSchema={type:'object',properties:{known:{type:'boolean'},note:{type:'string'}},required:['known','note']};
+const pickSchema={type:'object',properties:Object.fromEntries(['title_fa','title_orig','author','fa_published','from_first','from_second','why'].map(k=>[k,{type:'string'}])),required:['title_fa','title_orig','author','type','stars','fa_published','from_first','from_second','why']};
+pickSchema.properties.type={type:'string',enum:TYPES};pickSchema.properties.stars={type:'integer',minimum:1,maximum:5};
+const schema={type:'object',properties:{first:infoSchema,second:infoSchema,picks:{type:'array',items:pickSchema,maxItems:6}},required:['first','second','picks']};
 async function generate(ai,input,repair,deadline){
   const remaining=deadline-Date.now();
   if(remaining<=0)throw new Error('deadline');
   let timer;
   try{return await Promise.race([
-    ai.run(MODEL,{messages:[{role:'system',content:SYSTEM},{role:'user',content:JSON.stringify({...input,preference:LEVELS[input.level]})+(repair?'\nPrevious result was incomplete or invalid. Produce SIX valid distinct picks, or an honest unknown-input response.':'')}],max_tokens:4500,temperature:0.25,response_format:{type:'json_object'}}),
+    ai.run(MODEL,{messages:[{role:'system',content:SYSTEM},{role:'user',content:JSON.stringify({...input,preference:LEVELS[input.level]})+(repair?'\nPrevious result was incomplete or invalid. Produce SIX valid distinct picks, or an honest unknown-input response.':'')}],max_tokens:4500,temperature:0.25,response_format:{type:'json_schema',json_schema:schema}}),
     new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('deadline')),remaining);})
   ]);}finally{clearTimeout(timer);}
 }
@@ -73,12 +77,14 @@ export async function onRequestPost({request,env}){
   try{const raw=await request.text();if(raw.length>22000)return fail('درخواست بیش از حد طولانی است.',413);input=prepare(JSON.parse(raw));}catch{return fail('اطلاعات درخواست نامعتبر است.',400);}
   if(!input)return fail('دو کتاب متفاوت با عنوان معتبر وارد کن.',400);
   if(!env?.AI?.run)return fail('سرویس هوش مصنوعی هنوز فعال نشده است.',503);
-  let best=null;
+  let best=null,code='invalid_model_output';
   const deadline=Date.now()+100000;
   for(let attempt=0;attempt<2;attempt++){
     try{
       const result=await generate(env.AI,input,attempt>0,deadline);
-      const data=validate(parse(typeof result==='string'?result:result?.response??result?.output),input);
+      const parsed=parse(typeof result==='string'?result:result?.response??result?.output);
+      const data=validate(parsed,input);
+      code=!parsed?'invalid_json':!data?'invalid_structure':!data.picks.length?'no_valid_picks':'incomplete_picks';
       if(data&&(!data.first.known||!data.second.known||data.picks.length===6))return json({response:JSON.stringify(data)});
       if(data&&(!best||data.picks.length>best.picks.length))best=data;
     }catch(e){
@@ -90,6 +96,6 @@ export async function onRequestPost({request,env}){
     }
   }
   if(best?.picks.length)return json({response:JSON.stringify(best)});
-  return fail('پیشنهاد قابل‌اعتمادی دریافت نشد؛ عنوان و نام نویسنده را دقیق‌تر بنویس.',502);
+  return json({error:'پیشنهاد قابل‌اعتمادی دریافت نشد؛ عنوان و نام نویسنده را دقیق‌تر بنویس.',code},502);
 }
 export function onRequestGet(){return new Response(null,{status:405,headers:{Allow:'POST'}});}
