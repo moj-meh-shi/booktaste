@@ -133,12 +133,12 @@ function card(p,i,a,b){
   const s1='<div class="src"><b>از «'+esc(a)+'»</b>'+esc(p.from_first)+'</div>';
   const s2='<div class="src"><b>از «'+esc(b)+'»</b>'+esc(p.from_second)+'</div>';
   return '<article class="bk'+(hd?" hd":"")+'" style="--c:'+c+';--d:'+(i*90)+'ms"><span class="num">'+(i+1).toLocaleString("fa")+'</span>'+
-  '<div class="bd">'+(hd?'<span class="tag k">بهترین ترکیب</span>':'')+(p.type?'<span class="tag">'+esc(p.type)+'</span>':'')+'<span class="st" role="img" aria-label="برآورد مدل، تأیید مستقل نیست" title="برآورد مدل، تأیید مستقل نیست">'+stars(p.stars)+'</span>'+(p.fa_published==="yes"?'':'<span class="tag wn">ترجمهٔ فارسی تأیید نشده</span>')+'</div>'+
+  '<div class="bd">'+(hd?'<span class="tag k">بهترین ترکیب</span>':'')+(p.type?'<span class="tag">'+esc(p.type)+'</span>':'')+'<span class="st" role="img" aria-label="برآورد مدل، تأیید مستقل نیست" title="برآورد مدل، تأیید مستقل نیست">'+stars(p.stars)+'</span>'+(p.fa_published==="yes"?'':'<span class="tag wn">عنوان فارسی پیشنهادی؛ تأیید نشده</span>')+'</div>'+
   '<h2>'+esc(p.title_fa)+'</h2><p class="au">'+esc(p.author)+(p.title_orig?' · '+esc(p.title_orig):'')+'</p>'+
   (hd?'<div class="two">'+s1+s2+'</div>':s1+s2)+
   '<p class="why">'+esc(p.why)+'</p>'+
-  (typeof p.source_url==='string'&&/^https:\/\/openlibrary\.org\/works\/OL\d+W$/.test(p.source_url)?'<p><a href="'+esc(p.source_url)+'" target="_blank" rel="noopener noreferrer">مشخصات کتاب در Open Library</a><br><small>'+esc(p.author_orig)+'</small></p>':'')+
-  '<button class="rd" data-read="'+esc(p.title_fa)+'">قبلاً خوانده‌ام</button></article>';
+  (typeof p.source_url==='string'&&/^https:\/\/openlibrary\.org\/works\/OL\d+W$/.test(p.source_url)?'<p><a href="'+esc(p.source_url)+'" target="_blank" rel="noopener noreferrer">مشخصات کتاب در Open Library</a></p>':'')+
+  '<button class="rd" data-read="'+esc(p.title_orig||p.title_fa)+'">قبلاً خوانده‌ام</button></article>';
 }
 function render(o,a,b){
   const f=(o&&o.first)||{},sc=(o&&o.second)||{};
@@ -158,7 +158,7 @@ function render(o,a,b){
   const nt=(f.note||sc.note)?'<div class="nt"><b>برداشت ما:</b> «'+esc(a)+'»: '+esc(f.note)+' · «'+esc(b)+'»: '+esc(sc.note)+'</div>':'';
   $("out").innerHTML=nt+(ps.length<6?'<p class="ms">این بار فقط '+ps.length.toLocaleString('fa')+' پیشنهاد با مشخصات تطبیق‌یافته پیدا شد.</p>':'')+'<div class="grid">'+ps.map((p,i)=>card(p,i,a,b)).join("")+'</div>'+
     '<button class="again" id="more">پیشنهادهای بیشتر</button>'+
-    '<p class="note">این پیشنهادها را هوش مصنوعی می‌سازد. هر چه کتاب ناشناخته‌تر باشد، ممکن است در تناسب پیشنهاد یا برگردان فارسی اشتباه شود. مشخصات نسخهٔ اصلی را از پیوند هر کتاب بررسی کن.</p>';
+    '<p class="note">مشخصات نسخهٔ اصلی با Open Library تطبیق داده شده؛ عنوان فارسی، توضیح‌ها و تناسب پیشنهادها را هوش مصنوعی می‌سازد. هر چه کتاب ناشناخته‌تر باشد، ممکن است در تناسب پیشنهاد یا برگردان فارسی اشتباه شود. مشخصات نسخهٔ اصلی را از پیوند هر کتاب بررسی کن.</p>';
 }
 async function run(more){
   const a=$("a").value.trim().slice(0,120),b=$("b").value.trim().slice(0,120);

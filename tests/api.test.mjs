@@ -37,6 +37,7 @@ test('catalog work links must match allowlist',async()=>{
 });
 test('catalog edition titles supported',async()=>{
  const found=await verifyBooks([pick()],async()=>({ok:true,json:async()=>({docs:[{key:'/works/OL1W',title:'Other language',author_name:['Author'],editions:{docs:[{title:'Book 0'}]}}]})}));
+ assert.equal(found[0].author,'Author');
  assert.equal(found[0].source_url,'https://openlibrary.org/works/OL1W');
  assert.equal(found[0].fa_published,'unsure');
 });

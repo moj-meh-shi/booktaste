@@ -56,7 +56,8 @@ Respond in Persian with one complete JSON object and no markdown:
 If a title is ambiguous or unfamiliar, set its known to false, explain in note and return picks: []. Never guess an author or plot. Do not claim certainty without knowledge.
 For known inputs, recommend exactly SIX distinct real books. Never recommend the input books, alternate translations of them, or excluded books. Each pick MUST connect specific themes from BOTH inputs. Keep descriptions concise (one sentence per field). Do not merely say similar style.
 Supply title_orig as the known English edition title (or original title) and author_orig as the author's Latin-script name for bibliographic lookup. Prefer well-documented books over obscure uncertain metadata. Use Persian letters for title_fa and author. Use a recognized published Persian title when known; otherwise translate the title and use fa_published: unsure. stars is your confidence in bibliographic identity, not popularity; include only books rated 4 or 5. Never invent metadata to fill six slots.
-Categories: ${TYPES.join(', ')}. Prefer a mix with at most 2 fiction books, at least 2 nonfiction and 1 science when thematically appropriate; do not force irrelevant books. Rarity never overrides accuracy.`;
+Before choosing books, identify each input's central conflict, narrative perspective and emotional atmosphere. Notes MUST name its author and at least two concrete themes. Each connection MUST name a specific theme and how the proposed work explores it. Generic claims like "both examine humanity/society/psychology" are inadequate. Never confuse a fictional motif with literal science: Kafka's Metamorphosis concerns alienation, shame, family obligation and dehumanization, NOT biological evolution; The Blind Owl concerns isolation, obsession, unreliable narration and fractured identity, NOT a genius's biography. Recommend because of these literary themes, not a shared word. If you cannot justify a pick specifically, omit it.
+Categories: ${TYPES.join(', ')}. Include fiction, nonfiction and science only when there is a specific thematic connection. Do not force genre quotas or recommend generic textbooks to fill space. Rarity never overrides accuracy.`;
 const infoSchema={type:'object',properties:{known:{type:'boolean'},note:{type:'string'}},required:['known','note']};
 const pickSchema={type:'object',properties:Object.fromEntries(['title_fa','title_orig','author','author_orig','fa_published','from_first','from_second','why'].map(k=>[k,{type:'string'}])),required:['title_fa','title_orig','author','author_orig','type','stars','fa_published','from_first','from_second','why']};
 pickSchema.properties.type={type:'string',enum:TYPES};pickSchema.properties.stars={type:'integer',minimum:1,maximum:5};
@@ -90,7 +91,7 @@ export async function verifyBooks(picks,fetcher=fetch){
       const titles=[d.title,...(d.editions?.docs||[]).map(e=>e.title)];
       return titles.some(t=>titleKey(t)===titleKey(p.title_orig)) && (d.author_name||[]).some(a=>key(a)===key(p.author_orig));
     });
-    return match?[{...p,source_url:'https://openlibrary.org'+match.key,author_orig:match.author_name.find(a=>key(a)===key(p.author_orig)),fa_published:'unsure'}]:[];
+    return match?[{...p,source_url:'https://openlibrary.org'+match.key,author:match.author_name.find(a=>key(a)===key(p.author_orig)),author_orig:match.author_name.find(a=>key(a)===key(p.author_orig)),fa_published:'unsure'}]:[];
   });
 }
 export async function onRequestPost({request,env},fetcher=fetch){

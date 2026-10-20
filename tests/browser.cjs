@@ -10,6 +10,8 @@ const path=require('node:path');
   await page.goto('file://'+path.resolve(__dirname,'../index.html'));
   await page.locator('#a').fill('بوف کور');await page.locator('#b').fill('مسخ');
   assert.equal(await page.locator('#go').isDisabled(),false);
+  await page.evaluate(()=>render({first:{known:true,note:'تنهایی'},second:{known:true,note:'بیگانگی'},picks:Array.from({length:6},(_,i)=>({title_fa:'کتاب '+i,title_orig:'VeryLongTitle'.repeat(20)+i,author:'نویسنده',author_orig:'Author',source_url:'https://openlibrary.org/works/OL1W',type:'علمی',stars:5,why:'پیوند موضوعی',from_first:'تنهایی',from_second:'بیگانگی'}))},'بوف کور','مسخ'));
+  assert.equal(await page.locator('.bk').count(),6);
   for(const theme of ['dark','light']){
    await page.locator('#theme').click();
    const dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));
