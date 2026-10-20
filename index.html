@@ -137,6 +137,7 @@ function card(p,i,a,b){
   '<h2>'+esc(p.title_fa)+'</h2><p class="au">'+esc(p.author)+(p.title_orig?' · '+esc(p.title_orig):'')+'</p>'+
   (hd?'<div class="two">'+s1+s2+'</div>':s1+s2)+
   '<p class="why">'+esc(p.why)+'</p>'+
+  (typeof p.source_url==='string'&&/^https:\/\/openlibrary\.org\/works\/OL\d+W$/.test(p.source_url)?'<p><a href="'+esc(p.source_url)+'" target="_blank" rel="noopener noreferrer">مشخصات کتاب در Open Library</a><br><small>'+esc(p.author_orig)+'</small></p>':'')+
   '<button class="rd" data-read="'+esc(p.title_fa)+'">قبلاً خوانده‌ام</button></article>';
 }
 function render(o,a,b){
@@ -155,9 +156,9 @@ function render(o,a,b){
   ps.forEach(p=>prev.push(p.title_fa,p.title_orig||p.title_fa));
   prev=prev.slice(-60);
   const nt=(f.note||sc.note)?'<div class="nt"><b>برداشت ما:</b> «'+esc(a)+'»: '+esc(f.note)+' · «'+esc(b)+'»: '+esc(sc.note)+'</div>':'';
-  $("out").innerHTML=nt+(ps.length<6?'<p class="ms">این بار فقط '+ps.length.toLocaleString('fa')+' پیشنهاد قابل‌نمایش پیدا شد.</p>':'')+'<div class="grid">'+ps.map((p,i)=>card(p,i,a,b)).join("")+'</div>'+
+  $("out").innerHTML=nt+(ps.length<6?'<p class="ms">این بار فقط '+ps.length.toLocaleString('fa')+' پیشنهاد با مشخصات تطبیق‌یافته پیدا شد.</p>':'')+'<div class="grid">'+ps.map((p,i)=>card(p,i,a,b)).join("")+'</div>'+
     '<button class="again" id="more">پیشنهادهای بیشتر</button>'+
-    '<p class="note">این پیشنهادها را هوش مصنوعی می‌سازد. هر چه کتاب ناشناخته‌تر باشد، احتمال اشتباه در عنوان، نویسنده یا ترجمهٔ فارسی بیشتر است؛ حتماً بررسی کن.</p>';
+    '<p class="note">این پیشنهادها را هوش مصنوعی می‌سازد. هر چه کتاب ناشناخته‌تر باشد، ممکن است در تناسب پیشنهاد یا برگردان فارسی اشتباه شود. مشخصات نسخهٔ اصلی را از پیوند هر کتاب بررسی کن.</p>';
 }
 async function run(more){
   const a=$("a").value.trim().slice(0,120),b=$("b").value.trim().slice(0,120);

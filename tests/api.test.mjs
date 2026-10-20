@@ -1,10 +1,10 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {onRequestPost,onRequestGet} from '../functions/api/recommend.js';
+import {onRequestPost,onRequestGet,verifyBooks} from '../functions/api/recommend.js';
 const input={first:'بوف کور',second:'مسخ',level:'l',exclude:[]};
-const pick=(i=0)=>({title_fa:'کتاب '+i,title_orig:'Book '+i,author:'نویسنده',type:'علمی',stars:5,fa_published:'unsure',from_first:'تنهایی',from_second:'بیگانگی',why:'پیوند موضوعی'});
+const pick=(i=0)=>({title_fa:'کتاب '+i,title_orig:'Book '+i,author:'نویسنده',author_orig:'Author',type:'علمی',stars:5,fa_published:'unsure',from_first:'تنهایی',from_second:'بیگانگی',why:'پیوند موضوعی'});
 const good=()=>({first:{known:true,note:'صادق هدایت؛ تنهایی'},second:{known:true,note:'فرانتس کافکا؛ بیگانگی'},picks:Array.from({length:6},(_,i)=>pick(i))});
-async function call(body=input,run=async()=>({response:good()}),headers={}){return onRequestPost({request:new Request('https://booktaste.pages.dev/api/recommend',{method:'POST',headers,body:typeof body==='string'?body:JSON.stringify(body)}),env:run?{AI:{run}}:{}});}
+async function call(body=input,run=async()=>({response:good()}),headers={}){return onRequestPost({request:new Request('https://booktaste.pages.dev/api/recommend',{method:'POST',headers,body:typeof body==='string'?body:JSON.stringify(body)}),env:run?{AI:{run}}:{}},async()=>({ok:true,json:async()=>({docs:Array.from({length:6},(_,i)=>({key:'/works/OL'+(i+1)+'W',title:'Book '+i,author_name:['Author']}))})}));}
 async function data(r){return JSON.parse((await r.json()).response);}
 test('six valid recommendations, object format',async()=>{const r=await call();assert.equal(r.status,200);assert.equal((await data(r)).picks.length,6);});
 test('string and fenced output',async()=>{for(const v of [JSON.stringify(good()),'```json\n'+JSON.stringify(good())+'\n```'])assert.equal((await data(await call(input,async()=>({response:v})))).picks.length,6);});
@@ -24,3 +24,19 @@ test('quota error is actionable',async()=>assert.equal((await call(input,async()
 test('partial valid output survives failed repair',async()=>{let n=0;assert.equal((await data(await call(input,async()=>{if(++n===2)throw Error();return {response:{...good(),picks:[pick()]}}}))).picks.length,1);});
 test('legacy frontend supported',async()=>assert.equal((await call({prompt:'کتاب اول: بوف کور\nکتاب دوم: مسخ\n'})).status,200));
 test('GET not supported',()=>assert.equal(onRequestGet().status,405));
+
+test('bibliographic lookup rejects wrong title or author',async()=>{
+ const fetcher=async()=>({ok:true,json:async()=>({docs:[{key:'/works/OL1W',title:'Book 0',author_name:['Wrong Author']},{key:'/works/OL2W',title:'Other title',author_name:['Author']}]})});
+ assert.deepEqual(await verifyBooks([pick()],fetcher),[]);
+});
+test('catalog network failure fails closed',async()=>{
+ await assert.rejects(()=>verifyBooks([pick()],async()=>({ok:false})),/catalog_unavailable/);
+});
+test('catalog work links must match allowlist',async()=>{
+ assert.deepEqual(await verifyBooks([pick()],async()=>({ok:true,json:async()=>({docs:[{key:'https://evil.test',title:'Book 0',author_name:['Author']}]})})),[]);
+});
+test('catalog edition titles supported',async()=>{
+ const found=await verifyBooks([pick()],async()=>({ok:true,json:async()=>({docs:[{key:'/works/OL1W',title:'Other language',author_name:['Author'],editions:{docs:[{title:'Book 0'}]}}]})}));
+ assert.equal(found[0].source_url,'https://openlibrary.org/works/OL1W');
+ assert.equal(found[0].fa_published,'unsure');
+});
