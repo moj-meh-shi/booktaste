@@ -9,6 +9,7 @@
 :root{--bg:#f5f4fb;--card:rgba(255,255,255,.78);--tx:#16142b;--mut:#615e80;--bd:rgba(22,20,43,.1);--soft:rgba(124,92,255,.1);--ac:#6d4df2;--acx:#fff;--wn:#a05a00;--g1:rgba(124,92,255,.28);--g2:rgba(255,107,154,.2);--g3:rgba(255,184,107,.22);--cloud:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006 .011' numOctaves='5' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.35  0 0 0 0 0.3  0 0 0 0 0.6  0 0 0 1.4 -.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b0a14;--card:rgba(255,255,255,.055);--tx:#f1f0fa;--mut:#a9a6c9;--bd:rgba(255,255,255,.11);--soft:rgba(167,148,255,.14);--ac:#a794ff;--acx:#0b0a14;--wn:#f0b45a;--g1:rgba(124,92,255,.38);--g2:rgba(255,107,154,.2);--g3:rgba(255,184,107,.12);--cloud:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006 .011' numOctaves='5' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 -.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}}
 :root[data-theme="dark"]{--bg:#0b0a14;--card:rgba(255,255,255,.055);--tx:#f1f0fa;--mut:#a9a6c9;--bd:rgba(255,255,255,.11);--soft:rgba(167,148,255,.14);--ac:#a794ff;--acx:#0b0a14;--wn:#f0b45a;--g1:rgba(124,92,255,.38);--g2:rgba(255,107,154,.2);--g3:rgba(255,184,107,.12);--cloud:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='900' height='900'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.006 .011' numOctaves='5' seed='7' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 1.4 -.35'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+*{box-sizing:border-box} .pair>div{min-width:0} .bk,.nt{overflow-wrap:anywhere} .grid{grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr))}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,system-ui,sans-serif;line-height:1.9;-webkit-font-smoothing:antialiased}
 .bg:after{content:"";position:absolute;inset:0;pointer-events:none;background-image:var(--cloud);background-size:900px 900px;opacity:.13}
@@ -38,7 +39,7 @@ button:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
 .go:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 14px 34px rgba(124,92,255,.5)}
 .go:disabled{opacity:.45;box-shadow:none;cursor:not-allowed}
 #out{margin-top:30px}
-.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(250px,1fr))}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(min(250px,100%),1fr))}
 .bk{position:relative;overflow:hidden;background:var(--card);border:1px solid var(--bd);border-radius:22px;padding:20px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);animation:up .55s both;animation-delay:var(--d,0ms)}
 .bk:before{content:"";position:absolute;inset:0 0 auto 0;height:3px;background:var(--c)}
 .bk.hd{grid-column:1/-1;padding:26px}
@@ -87,6 +88,7 @@ textarea:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 4px var(--so
 <p class="sub">دوتا کتابی که دوست داری رو بنویس تا من از ترکیبشون بهت پیشنهاد کنم چه کتابایی رو خوشت میاد</p>
 </header>
 <section class="panel">
+<button id="theme" type="button" class="rd" aria-label="تغییر پوسته">تغییر پوسته</button>
 <div class="pair">
 <div><label for="a">کتاب اول</label><input id="a" maxlength="120" placeholder="عنوان (نام نویسنده کمک می‌کند)" autocomplete="off"></div>
 <div class="orb" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
@@ -102,26 +104,28 @@ textarea:focus{outline:none;border-color:var(--ac);box-shadow:0 0 0 4px var(--so
 <script>
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
-const TY=["رمان","داستان کوتاه","نمایشنامه","فلسفه و اندیشه","تاریخ و جامعه","علمی","زندگی‌نامه و خاطره","جستار و مقاله"];
 const TC={"رمان":"#8b5cf6","داستان کوتاه":"#0d9488","نمایشنامه":"#d97706","فلسفه و اندیشه":"#2563eb","تاریخ و جامعه":"#c2410c","علمی":"#16a34a","زندگی‌نامه و خاطره":"#4f46e5","جستار و مقاله":"#64748b"};
 const OB={f:"آشنا",l:"کمتر شناخته‌شده",r:"کشف نادر"};
-const OBP={
-  f:"می‌تواند شناخته‌شده باشد، ولی از پرفروش‌ترین‌ها و پرتکرارترین پیشنهادها پرهیز کن.",
-  l:"از کتاب‌های پرفروش، مشهور و پرتکرار هر ژانر پرهیز کن. آثار معتبر ولی کمتر شناخته‌شده را بیاور و بین دوره‌ها و کشورهای مختلف تنوع بده.",
-  r:"فقط آثار نادرتر و کمتر شناخته‌شده را بیاور و هیچ کتاب مشهوری نیاور."
-};
-const NL=String.fromCharCode(10);
-const LAT=/[A-Za-z]/;
+const norm=s=>String(s||"").normalize("NFKC").toLowerCase().replace(/[يى]/g,"ی").replace(/ك/g,"ک").replace(/[ً-ٰٟ]/g,"").replace(/[^\p{L}\p{N}]/gu,"");
+const cleanList=a=>Array.isArray(a)?[...new Set(a.filter(x=>typeof x==="string"&&x.trim()).map(x=>x.trim().slice(0,160)))].slice(-120):[];
+let lastQuery="";
+try{const t=localStorage.getItem("bl_theme");if(t==="dark"||t==="light")document.documentElement.dataset.theme=t;}catch{}
+$("theme").onclick=()=>{const t=document.documentElement.dataset.theme|| (matchMedia("(prefers-color-scheme:dark)").matches?"dark":"light");document.documentElement.dataset.theme=t==="dark"?"light":"dark";try{localStorage.setItem("bl_theme",document.documentElement.dataset.theme);}catch{}};
 let lvl="l",prev=[],busy=false,rd=[];
-try{rd=JSON.parse(localStorage.getItem("bl_read2")||"[]");if(!Array.isArray(rd))rd=[];}catch(e){rd=[];}
-function saveRd(){try{localStorage.setItem("bl_read2",JSON.stringify(rd.slice(-60)));}catch(e){}drawEx();}
+try{rd=JSON.parse(localStorage.getItem("bl_read2")||"[]");rd=cleanList(rd);}catch(e){rd=[];}
+function saveRd(){rd=cleanList(rd);try{localStorage.setItem("bl_read2",JSON.stringify(rd));}catch(e){}drawEx();}
 function drawEx(){
   $("ex").innerHTML=rd.length?(rd.length.toLocaleString("fa")+' کتاب خوانده‌شده کنار گذاشته می‌شود.<button id="clr">پاک کردن</button>'):"";
 }
 function drawLv(){
   $("lv").innerHTML=Object.keys(OB).map(k=>'<button class="'+(lvl===k?"on":"")+'" data-l="'+k+'" aria-pressed="'+(lvl===k)+'">'+OB[k]+'</button>').join("");
 }
-function check(){$("go").disabled=busy||!$("a").value.trim()||!$("b").value.trim();}
+function check(){
+  $("go").disabled=busy||!$("a").value.trim()||!$("b").value.trim();
+  $("out").setAttribute("aria-busy",String(busy));
+  $("a").disabled=busy;$("b").disabled=busy;
+  document.querySelectorAll("#lv button").forEach(el=>el.disabled=busy);
+}
 function stars(n){n=Math.max(1,Math.min(5,Math.round(Number(n)||3)));return "★".repeat(n)+"☆".repeat(5-n);}
 function card(p,i,a,b){
   const c=TC[p.type]||"#7c5cff";
@@ -129,7 +133,7 @@ function card(p,i,a,b){
   const s1='<div class="src"><b>از «'+esc(a)+'»</b>'+esc(p.from_first)+'</div>';
   const s2='<div class="src"><b>از «'+esc(b)+'»</b>'+esc(p.from_second)+'</div>';
   return '<article class="bk'+(hd?" hd":"")+'" style="--c:'+c+';--d:'+(i*90)+'ms"><span class="num">'+(i+1).toLocaleString("fa")+'</span>'+
-  '<div class="bd">'+(hd?'<span class="tag k">بهترین ترکیب</span>':'')+(p.type?'<span class="tag">'+esc(p.type)+'</span>':'')+'<span class="st" role="img" aria-label="میزان اطمینان">'+stars(p.stars)+'</span>'+(p.fa_published==="yes"?'':'<span class="tag wn">ترجمهٔ فارسی تأیید نشده</span>')+'</div>'+
+  '<div class="bd">'+(hd?'<span class="tag k">بهترین ترکیب</span>':'')+(p.type?'<span class="tag">'+esc(p.type)+'</span>':'')+'<span class="st" role="img" aria-label="برآورد مدل، تأیید مستقل نیست" title="برآورد مدل، تأیید مستقل نیست">'+stars(p.stars)+'</span>'+(p.fa_published==="yes"?'':'<span class="tag wn">ترجمهٔ فارسی تأیید نشده</span>')+'</div>'+
   '<h2>'+esc(p.title_fa)+'</h2><p class="au">'+esc(p.author)+(p.title_orig?' · '+esc(p.title_orig):'')+'</p>'+
   (hd?'<div class="two">'+s1+s2+'</div>':s1+s2)+
   '<p class="why">'+esc(p.why)+'</p>'+
@@ -140,89 +144,55 @@ function render(o,a,b){
   const bad=[];
   if(f.known===false)bad.push(1);
   if(sc.known===false)bad.push(2);
-  const ps=(o&&Array.isArray(o.picks)?o.picks:[]).filter(p=>p&&typeof p.title_fa==="string"&&p.title_fa.trim()&&typeof p.why==="string");
+  const seen=new Set([a,b,...rd,...prev].map(norm));
+  const ps=(o&&Array.isArray(o.picks)?o.picks:[]).filter(p=>{
+    if(!p||!["title_fa","author","why","from_first","from_second"].every(k=>typeof p[k]==="string"&&p[k].trim()))return false;
+    const keys=[p.title_fa,p.title_orig].filter(Boolean).map(norm);
+    if(keys.some(k=>seen.has(k)))return false;
+    keys.forEach(k=>seen.add(k));return true;
+  }).slice(0,6);
   if(bad.length||!ps.length){const nm=[bad.includes(1)?"«"+a+"»":"",bad.includes(2)?"«"+b+"»":""].filter(Boolean).join(" و ");$("out").innerHTML='<p class="ms">'+(nm?esc(nm)+' را نشناختم. گاهی نوشتن نام نویسنده کنار عنوان کمک می‌کند.':'این بار نتوانستم پیشنهاد مطمئنی بسازم. دوباره امتحان کن.')+'</p>';return;}
-  ps.forEach(p=>prev.push(p.title_fa));
+  ps.forEach(p=>prev.push(p.title_fa,p.title_orig||p.title_fa));
   prev=prev.slice(-60);
   const nt=(f.note||sc.note)?'<div class="nt"><b>برداشت ما:</b> «'+esc(a)+'»: '+esc(f.note)+' · «'+esc(b)+'»: '+esc(sc.note)+'</div>':'';
-  $("out").innerHTML=nt+'<div class="grid">'+ps.map((p,i)=>card(p,i,a,b)).join("")+'</div>'+
-    '<button class="again" id="more">شش پیشنهاد دیگر</button>'+
+  $("out").innerHTML=nt+(ps.length<6?'<p class="ms">این بار فقط '+ps.length.toLocaleString('fa')+' پیشنهاد قابل‌نمایش پیدا شد.</p>':'')+'<div class="grid">'+ps.map((p,i)=>card(p,i,a,b)).join("")+'</div>'+
+    '<button class="again" id="more">پیشنهادهای بیشتر</button>'+
     '<p class="note">این پیشنهادها را هوش مصنوعی می‌سازد. هر چه کتاب ناشناخته‌تر باشد، احتمال اشتباه در عنوان، نویسنده یا ترجمهٔ فارسی بیشتر است؛ حتماً بررسی کن.</p>';
-}
-async function fixLatin(s,o){
-  const ps=(o&&Array.isArray(o.picks))?o.picks:[];
-  const bad=ps.filter(p=>p&&(LAT.test(p.title_fa||"")||LAT.test(p.author||"")));
-  if(!bad.length)return;
-  try{
-    const q='برای هر کتاب زیر، عنوان فارسی رایج (اگر ترجمهٔ فارسی منتشرشده‌ای را مطمئن می‌شناسی) یا برگردان فارسی عنوان، و نام فارسی نویسنده را بنویس. هیچ حرف لاتینی در پاسخ نباشد. فقط یک آرایهٔ JSON هم‌ترتیب با ورودی بده: [{"title_fa":"","author":"","fa_published":"yes یا unsure"}]'+NL+bad.map((p,i)=>(i+1)+". "+(p.title_orig||p.title_fa)+" — "+(p.author||"")).join(NL);
-    const r=await s.json(q,{cache:false});
-    if(Array.isArray(r)&&r.length===bad.length)bad.forEach((p,i)=>{
-      const x=r[i];
-      if(x&&typeof x.title_fa==="string"&&x.title_fa.trim()&&!LAT.test(x.title_fa)){
-        p.title_fa=x.title_fa.trim();
-        if(typeof x.author==="string"&&x.author.trim()&&!LAT.test(x.author))p.author=x.author.trim();
-        p.fa_published=x.fa_published==="yes"?"yes":"unsure";
-      }
-    });
-  }catch(e){}
 }
 async function run(more){
   const a=$("a").value.trim().slice(0,120),b=$("b").value.trim().slice(0,120);
   if(!a||!b||busy)return;
-  if(a===b){$("out").innerHTML='<p class="ms">دو کتاب متفاوت وارد کن تا سلیقه‌ات را ترکیب کنم.</p>';return;}
-  if(!more)prev=[];
+  if(norm(a)===norm(b)){$("out").innerHTML='<p class="ms">دو کتاب متفاوت وارد کن تا سلیقه‌ات را ترکیب کنم.</p>';return;}
+  const key=JSON.stringify([norm(a),norm(b),lvl]);
+  if(!more||key!==lastQuery)prev=[];
+  lastQuery=key;
+  const previousHTML=$("out").innerHTML;
+  const controller=new AbortController();
+  const timer=setTimeout(()=>controller.abort(),115000);
   busy=true;check();
   $("out").innerHTML='<p class="ms">در حال خواندن سلیقه‌ات…</p><div class="grid"><div class="sk hd"></div><div class="sk"></div><div class="sk"></div></div>';
   try{
-    const s = {
-      json: async (prompt) => {
-        const response = await fetch("/api/recommend", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt }),
-          signal: AbortSignal.timeout(90000)
-        });
-        if (!response.ok) {
-          const failure = await response.json().catch(() => ({}));
-          throw new Error(failure.error || "سرویس پیشنهاد کتاب در دسترس نیست؛ دوباره امتحان کن.");
-        }
-        const data = await response.json();
-        if (typeof data.response !== "string") return data;
-        let text = data.response.trim();
-        text = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "");
-        return JSON.parse(text);
-      }
-    };
-    const ex=rd.concat(prev);
-    const prompt=`تو کتاب‌شناس و کتابدار حرفه‌ای هستی. مخاطب، خواننده‌ای بسیار باتجربه است که کتاب‌های مشهور و پرفروش را خوانده است.
-کتاب اول: ${a}
-کتاب دوم: ${b}
-${ex.length?'کتاب‌هایی که پیش‌تر خوانده یا دیده است و هرگز نباید پیشنهاد بدهی: '+ex.join('، '):''}
-
-قواعد:
-1. شناخت ورودی‌ها: عنوان‌ها اغلب نام کتاب‌های فارسی (از جمله ادبیات معاصر ایران) یا ترجمه‌شده‌اند و ممکن است املای متفاوت، نیم‌فاصله یا نام دیگری داشته باشند. اگر کتابی با آن عنوان به ذهنت می‌رسد، حتی با اطمینان کم، بپذیر. فقط وقتی known را false بگذار که هیچ برداشت معقولی از آن عنوان نداری. هرگز محتوایی را که نمی‌دانی از خودت نساز؛ هر جا مطمئن نیستی، پیشنهادهایت را بر پایهٔ چیزی بساز که مطمئنی و در note بگو چه فهمیده‌ای.
-2. note: یک جمله که نشان بدهد هر کتاب ورودی را چه فهمیده‌ای (نویسنده و موضوع یا حال‌وهوا).
-3. فقط کتاب‌هایی را بیاور که واقعاً وجود دارند و هرگز عنوان، نویسنده یا ترجمه‌ای از خودت نساز. برای هر پیشنهاد stars را عددی از ۱ تا ۵ بنویس: ۵ یعنی کاملاً مطمئنی که این کتاب با این عنوان و نویسنده وجود دارد، ۳ یعنی احتمالاً هست ولی جزئیاتش را مطمئن نیستی، و ۲ یعنی خیلی کم مطمئنی. کتابی را که کمتر از ۲ ستاره می‌دهی اصلاً نیاور. اگر یکی از ورودی‌ها known=false است، picks را خالی بگذار.
-4. شش پیشنهاد بده که هر کدام ترکیبی از حال‌وهوا، موضوع یا سبک هر دو کتاب باشد. اولی بهترین ترکیب باشد.
-5. نوع کتاب‌ها را خودت انتخاب کن و لابه‌لای هم بیاور: داستان (رمان یا داستان کوتاه)، غیرداستان (فلسفه، تاریخ، جامعه، زندگی‌نامه، جستار)، کتاب علمی (علم عمومی، روان‌شناسی، علوم شناختی و مانند آن) و نمایشنامه. حداکثر دو اثر داستانی، دست‌کم دو کتاب غیرداستانی، دست‌کم یک کتاب علمی، و حداکثر یک نمایشنامه (فقط اگر واقعاً مناسب باشد؛ زیاد نیاور). حتی اگر هر دو کتاب ورودی رمان باشند، پیوند موضوعی یا فکری با غیرداستان و علمی را پیدا کن.
-6. ${OBP[lvl]}
-7. دو کتاب ورودی را پیشنهاد نده.
-8. همهٔ متن‌ها به فارسی ساده و هر فیلد حداکثر دو جمله باشد. title_fa و author حتماً با حروف فارسی باشند و هرگز حرف لاتین نداشته باشند. اگر ترجمهٔ فارسی منتشرشده‌ای را مطمئن می‌شناسی، همان عنوان رایج را بنویس و fa_published را "yes" بگذار. اگر مطمئن نیستی، عنوان را خودت به فارسی برگردان و fa_published را "unsure" بگذار. عنوان اصلی را فقط در title_orig بنویس. type دقیقاً یکی از این‌ها باشد: ${TY.join('، ')}.
-
-فقط یک شیء JSON بده و هیچ متن دیگری ننویس، دقیقاً به این شکل:
-{"first":{"known":true,"note":""},"second":{"known":true,"note":""},"picks":[{"title_fa":"","title_orig":"","author":"","type":"","stars":5,"fa_published":"yes","from_first":"","from_second":"","why":""}]}`;
-    const o=await s.json(prompt,{cache:false});
-    await fixLatin(s,o);
+    const response=await fetch("/api/recommend",{
+      method:"POST",headers:{"Content-Type":"application/json"},
+      body:JSON.stringify({first:a,second:b,level:lvl,exclude:cleanList([...rd,...prev])}),signal:controller.signal
+    });
+    const data=await response.json().catch(()=>null);
+    if(!response.ok||!data)throw new Error(data?.error||"پاسخ سرویس قابل خواندن نبود؛ دوباره امتحان کن.");
+    const o=typeof data.response==="string"?JSON.parse(data.response):data;
     render(o,a,b);
   }catch(e){
-    $("out").innerHTML='<p class="ms">'+esc(e.name==='TimeoutError'?'پاسخ گرفتن طول کشید؛ دوباره امتحان کن.':e.message||'الان نتوانستم پیشنهاد بسازم؛ دوباره امتحان کن.')+'</p>';
-  }
-  busy=false;check();
+    const message=e.name==='AbortError'?'پاسخ گرفتن طول کشید؛ دوباره امتحان کن.':e instanceof SyntaxError?'پاسخ سرویس ناقص بود؛ دوباره امتحان کن.':e.message||'ارتباط برقرار نشد؛ دوباره امتحان کن.';
+    $("out").innerHTML=(more?previousHTML:'')+'<p class="ms" role="alert">'+esc(message)+'</p>';
+  }finally{clearTimeout(timer);busy=false;check();}
 }
-$("lv").addEventListener("click",e=>{const el=e.target.closest("button");if(!el)return;lvl=el.dataset.l;drawLv();});
+window.addEventListener("pageshow",()=>{check();});
+window.addEventListener("focus",check);
+$("a").addEventListener("change",check);$("b").addEventListener("change",check);
+
+$("lv").addEventListener("click",e=>{const el=e.target.closest("button");if(!el||busy)return;lvl=el.dataset.l;drawLv();});
 $("a").addEventListener("input",check);
 $("b").addEventListener("input",check);
-[$("a"),$("b")].forEach(el=>el.addEventListener("keydown",e=>{if(e.key==="Enter")run(false);}));
+[$("a"),$("b")].forEach(el=>el.addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.isComposing)run(false);}));
 $("go").addEventListener("click",()=>run(false));
 $("out").addEventListener("click",e=>{
   const el=e.target.closest("button");if(!el)return;
