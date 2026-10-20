@@ -15,9 +15,9 @@ export async function onRequestPost({ request, env }) {
 
     const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct-fast", {
       prompt:
-        "Follow the user's instructions exactly. If they request JSON only, return valid JSON only, without Markdown fences or extra commentary.\n\n" +
+        "Return one complete, valid JSON object only. Keep every text field short (maximum 15 Persian words). Never add Markdown or explanations. Finish the JSON structure properly.\n\n" +
         prompt,
-            max_tokens: 3000,
+            max_tokens: 4096,
       temperature: 0.2,
       response_format: { type: "json_object" }
     });
