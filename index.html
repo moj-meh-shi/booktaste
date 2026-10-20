@@ -143,6 +143,7 @@ function render(o,a,b){
   const ps=(o&&Array.isArray(o.picks)?o.picks:[]).filter(p=>p&&typeof p.title_fa==="string"&&p.title_fa.trim()&&typeof p.why==="string");
   if(bad.length||!ps.length){const nm=[bad.includes(1)?"«"+a+"»":"",bad.includes(2)?"«"+b+"»":""].filter(Boolean).join(" و ");$("out").innerHTML='<p class="ms">'+(nm?esc(nm)+' را نشناختم. گاهی نوشتن نام نویسنده کنار عنوان کمک می‌کند.':'این بار نتوانستم پیشنهاد مطمئنی بسازم. دوباره امتحان کن.')+'</p>';return;}
   ps.forEach(p=>prev.push(p.title_fa));
+  prev=prev.slice(-60);
   const nt=(f.note||sc.note)?'<div class="nt"><b>برداشت ما:</b> «'+esc(a)+'»: '+esc(f.note)+' · «'+esc(b)+'»: '+esc(sc.note)+'</div>':'';
   $("out").innerHTML=nt+'<div class="grid">'+ps.map((p,i)=>card(p,i,a,b)).join("")+'</div>'+
     '<button class="again" id="more">شش پیشنهاد دیگر</button>'+
@@ -168,6 +169,7 @@ async function fixLatin(s,o){
 async function run(more){
   const a=$("a").value.trim().slice(0,120),b=$("b").value.trim().slice(0,120);
   if(!a||!b||busy)return;
+  if(a===b){$("out").innerHTML='<p class="ms">دو کتاب متفاوت وارد کن تا سلیقه‌ات را ترکیب کنم.</p>';return;}
   if(!more)prev=[];
   busy=true;check();
   $("out").innerHTML='<p class="ms">در حال خواندن سلیقه‌ات…</p><div class="grid"><div class="sk hd"></div><div class="sk"></div><div class="sk"></div></div>';
@@ -177,9 +179,13 @@ async function run(more){
         const response = await fetch("/api/recommend", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ prompt })
+          body: JSON.stringify({ prompt }),
+          signal: AbortSignal.timeout(90000)
         });
-        if (!response.ok) throw new Error("AI request failed: " + response.status);
+        if (!response.ok) {
+          const failure = await response.json().catch(() => ({}));
+          throw new Error(failure.error || "سرویس پیشنهاد کتاب در دسترس نیست؛ دوباره امتحان کن.");
+        }
         const data = await response.json();
         if (typeof data.response !== "string") return data;
         let text = data.response.trim();
@@ -209,7 +215,7 @@ ${ex.length?'کتاب‌هایی که پیش‌تر خوانده یا دیده �
     await fixLatin(s,o);
     render(o,a,b);
   }catch(e){
-    $("out").innerHTML='<p class="ms">الان نتوانستم پیشنهاد بسازم. اگر پنجرهٔ اجازه نشان داده شد آن را تأیید کن و دوباره امتحان کن.</p>';
+    $("out").innerHTML='<p class="ms">'+esc(e.name==='TimeoutError'?'پاسخ گرفتن طول کشید؛ دوباره امتحان کن.':e.message||'الان نتوانستم پیشنهاد بسازم؛ دوباره امتحان کن.')+'</p>';
   }
   busy=false;check();
 }

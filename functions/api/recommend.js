@@ -4,30 +4,30 @@ export async function onRequestPost({ request, env }) {
     const prompt = typeof body?.prompt === "string" ? body.prompt : "";
 
     if (!prompt || prompt.length > 18000) {
-      return Response.json({ error: "Invalid prompt" }, { status: 400 });
+      return Response.json({ error: "درخواست نامعتبر است؛ دوباره امتحان کن." }, { status: 400 });
     }
     if (!env.AI) {
       return Response.json(
-        { error: "AI binding is missing. Add a Workers AI binding named AI in Cloudflare Pages settings." },
+        { error: "سرویس هوش مصنوعی هنوز توسط مدیر سایت فعال نشده است." },
         { status: 503 }
       );
     }
 
     const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
       prompt:
-        "Follow the user's instructions exactly. If they request JSON only, return valid JSON only, without Markdown fences or extra commentary.\\n\\n" +
+        "Follow the user's instructions exactly. If they request JSON only, return valid JSON only, without Markdown fences or extra commentary.\n\n" +
         prompt,
       max_tokens: 3000
     });
 
     const answer = typeof result === "string" ? result : result?.response;
     if (typeof answer !== "string" || !answer.trim()) {
-      return Response.json({ error: "The AI model returned an empty response." }, { status: 502 });
+      return Response.json({ error: "پاسخی دریافت نشد؛ دوباره امتحان کن." }, { status: 502 });
     }
     return Response.json({ response: answer });
   } catch (error) {
     return Response.json(
-      { error: "AI request failed", detail: String(error?.message || error) },
+      { error: "سرویس پیشنهاد کتاب موقتاً در دسترس نیست؛ کمی بعد دوباره امتحان کن." },
       { status: 500 }
     );
   }
