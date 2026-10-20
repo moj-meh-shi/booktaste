@@ -13,7 +13,7 @@ export async function onRequestPost({ request, env }) {
       );
     }
 
-    const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct", {
+    const result = await env.AI.run("@cf/meta/llama-3.1-8b-instruct-fast", {
       prompt:
         "Follow the user's instructions exactly. If they request JSON only, return valid JSON only, without Markdown fences or extra commentary.\n\n" +
         prompt,
