@@ -13,6 +13,14 @@ function parse(value) {
   try{return JSON.parse(s);}catch{}
   try{return JSON.parse(s.slice(s.indexOf('{'),s.lastIndexOf('}')+1));}catch{return null;}
 }
+export function answerFrom(result){
+  if(typeof result==='string')return result;
+  if(result?.response!=null)return result.response;
+  if(result?.choices?.[0]?.message?.content!=null)return result.choices[0].message.content;
+  if(typeof result?.output_text==='string')return result.output_text;
+  if(Array.isArray(result?.output))return result.output.filter(x=>x.type==='message').flatMap(x=>x.content||[]).filter(x=>x.type==='output_text').map(x=>x.text||'').join('');
+  return result?.output??null;
+}
 function prepare(body) {
   if(!body||typeof body!=='object'||Array.isArray(body))return null;
   // Keep pages loaded before deployment working while moving prompts to the server.
@@ -79,8 +87,8 @@ export async function verifyBooks(picks,fetcher=fetch){
   const quote=s=>'"'+s.replace(/["\\]/g,' ')+'"';
   const query=candidates.map(p=>'(title:'+quote(p.title_orig)+' AND author:'+quote(p.author_orig)+')').join(' OR ');
   const url=new URL('https://openlibrary.org/search.json');
-  url.search=new URLSearchParams({q:query,fields:'key,title,author_name,editions,editions.title',limit:'60'});
-  const response=await fetcher(url,{headers:{'User-Agent':'Booktaste (https://booktaste.pages.dev)'},signal:AbortSignal.timeout(8000),cf:{cacheTtl:86400,cacheEverything:true}});
+  url.search=new URLSearchParams({q:query,fields:'key,title,author_name',limit:'30'});
+  const response=await fetcher(url,{headers:{'User-Agent':'Booktaste (https://booktaste.pages.dev)'},signal:AbortSignal.timeout(12000),cf:{cacheTtl:86400,cacheEverything:true}});
   if(!response.ok)throw new Error('catalog_unavailable');
   const body=await response.json();
   if(!Array.isArray(body.docs))throw new Error('catalog_unavailable');
@@ -123,7 +131,7 @@ export async function onRequestPost({request,env},fetcher=fetch){
   for(let attempt=0;attempt<2;attempt++){
     try{
       const result=await generate(env.AI,input,attempt>0,deadline);
-      const parsed=parse(typeof result==='string'?result:result?.response??result?.output??result?.choices?.[0]?.message?.content);
+      const parsed=parse(answerFrom(result));
       const data=validate(parsed,input);
       code=!parsed?'invalid_json':!data?'invalid_structure':!data.picks.length?'no_valid_picks':'incomplete_picks';
       if(data&&(!data.first.known||!data.second.known))return json({response:JSON.stringify(data)});

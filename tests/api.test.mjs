@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {onRequestPost,onRequestGet,verifyBooks,responseCache} from '../functions/api/recommend.js';
+import {onRequestPost,onRequestGet,verifyBooks,responseCache,answerFrom} from '../functions/api/recommend.js';
 const input={first:'بوف کور',second:'مسخ',level:'l',exclude:[]};
 const pick=(i=0)=>({title_fa:'کتاب '+i,title_orig:'Book '+i,author:'نویسنده',author_orig:'Author',type:'علمی',stars:5,fa_published:'unsure',from_first:'تنهایی',from_second:'بیگانگی',why:'پیوند موضوعی'});
 const good=()=>({first:{known:true,note:'صادق هدایت؛ تنهایی'},second:{known:true,note:'فرانتس کافکا؛ بیگانگی'},picks:Array.from({length:6},(_,i)=>pick(i))});
@@ -57,3 +57,7 @@ test('cache write failure never breaks response',async()=>{
 });
 
 test('OpenAI-compatible model output accepted',async()=>assert.equal((await data(await call(input,async()=>({choices:[{message:{content:JSON.stringify(good())}}]})))).picks.length,6));
+
+test('Responses format extracts final message only',()=>{
+ assert.equal(answerFrom({output:[{type:'reasoning',content:[{type:'output_text',text:'private reasoning'}]},{type:'message',content:[{type:'output_text',text:'final'}]}]}),'final');
+});

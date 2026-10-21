@@ -12,7 +12,7 @@ For an existing Chromium binary, set `PLAYWRIGHT_CHROMIUM_EXECUTABLE`.
 
 ## Scope
 
-37 automated tests cover API validation, malformed JSON, spelling normalization, exclusions, duplicate output, unknown inputs, retry limits, provider/quota failures, unavailable binding, origin checks, catalog matching and failures, markup escaping, storage corruption/unavailability, reload recovery, theme persistence, read-list handling, and concurrent submission prevention.
+38 automated tests cover API validation, malformed JSON, spelling normalization, exclusions, duplicate output, unknown inputs, retry limits, provider/quota failures, unavailable binding, origin checks, catalog matching and failures, markup escaping, storage corruption/unavailability, reload recovery, theme persistence, read-list handling, and concurrent submission prevention.
 
 Browser tests cover widths 320, 360, 390, 768, 1366px, dark/light themes, long recommendation cards, horizontal overflow, reload and equal-input validation. These are Chromium tests; Safari/iOS and real mobile devices have not been tested.
 
