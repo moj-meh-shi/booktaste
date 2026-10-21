@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {onRequestPost,onRequestGet,verifyBooks} from '../functions/api/recommend.js';
+import {onRequestPost,onRequestGet,verifyBooks,responseCache} from '../functions/api/recommend.js';
 const input={first:'بوف کور',second:'مسخ',level:'l',exclude:[]};
 const pick=(i=0)=>({title_fa:'کتاب '+i,title_orig:'Book '+i,author:'نویسنده',author_orig:'Author',type:'علمی',stars:5,fa_published:'unsure',from_first:'تنهایی',from_second:'بیگانگی',why:'پیوند موضوعی'});
 const good=()=>({first:{known:true,note:'صادق هدایت؛ تنهایی'},second:{known:true,note:'فرانتس کافکا؛ بیگانگی'},picks:Array.from({length:6},(_,i)=>pick(i))});
@@ -41,3 +41,19 @@ test('catalog edition titles supported',async()=>{
  assert.equal(found[0].source_url,'https://openlibrary.org/works/OL1W');
  assert.equal(found[0].fa_published,'unsure');
 });
+
+test('validated cache round trip and key separation',async()=>{
+ const entries=new Map();
+ const cache={match:async r=>entries.get(r.url)?.clone(),put:async(r,v)=>entries.set(r.url,v)};
+ const a=await responseCache(input,'https://booktaste.pages.dev/api/recommend',cache);
+ assert.equal(await a.get(),null);
+ await a.put({response:'saved'});
+ const hit=await a.get();assert.equal((await hit.json()).response,'saved');assert.equal(hit.headers.get('Cache-Control'),'no-store');
+ for(const changed of [{...input,level:'r'},{...input,exclude:['read']},{...input,first:'Other'}])assert.equal(await (await responseCache(changed,'https://booktaste.pages.dev/api/recommend',cache)).get(),null);
+});
+test('cache write failure never breaks response',async()=>{
+ const a=await responseCache(input,'https://booktaste.pages.dev/api/recommend',{match:async()=>null,put:async()=>{throw Error('cache')}});
+ await a.put({response:'saved'});assert.equal(await a.get(),null);
+});
+
+test('OpenAI-compatible model output accepted',async()=>assert.equal((await data(await call(input,async()=>({choices:[{message:{content:JSON.stringify(good())}}]})))).picks.length,6));

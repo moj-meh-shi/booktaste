@@ -1,5 +1,5 @@
 // Cloudflare Pages Function. No paid API key is required.
-const MODEL = '@cf/meta/llama-3.3-70b-instruct-fp8-fast';
+const MODEL = '@cf/qwen/qwen3-30b-a3b-fp8';
 const TYPES = ['رمان','داستان کوتاه','نمایشنامه','فلسفه و اندیشه','تاریخ و جامعه','علمی','زندگی‌نامه و خاطره','جستار و مقاله'];
 const LEVELS = {f:'Familiar books are welcome.',l:'Prefer less well-known books.',r:'Prefer rare books, but never invent a title to satisfy rarity.'};
 const normalize = s => String(s || '').normalize('NFKC').toLowerCase().replace(/[يى]/g,'ی').replace(/ك/g,'ک').replace(/[\u064b-\u065f\u0670]/g,'').replace(/[^\p{L}\p{N}]/gu,'');
@@ -9,7 +9,7 @@ const fail = (message,status) => json({error:message},status);
 function parse(value) {
   if(value && typeof value==='object')return value;
   if(typeof value!=='string')return null;
-  const s=value.trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
+  const s=value.replace(/<think>[\s\S]*?<\/think>/gi,'').trim().replace(/^```(?:json)?\s*/i,'').replace(/\s*```$/,'');
   try{return JSON.parse(s);}catch{}
   try{return JSON.parse(s.slice(s.indexOf('{'),s.lastIndexOf('}')+1));}catch{return null;}
 }
@@ -67,7 +67,7 @@ async function generate(ai,input,repair,deadline){
   if(remaining<=0)throw new Error('deadline');
   let timer;
   try{return await Promise.race([
-    ai.run(MODEL,{messages:[{role:'system',content:SYSTEM},{role:'user',content:JSON.stringify({...input,preference:LEVELS[input.level]})+(repair?'\nPrevious result was incomplete or invalid. Produce SIX valid distinct picks, or an honest unknown-input response.':'')}],max_tokens:5500,temperature:0.25,response_format:{type:'json_schema',json_schema:schema}}),
+    ai.run(MODEL,{messages:[{role:'system',content:SYSTEM+'\nAll descriptive text must be Persian only. /no_think'},{role:'user',content:JSON.stringify({...input,preference:LEVELS[input.level]})+(repair?'\nPrevious result was incomplete or invalid. Produce SIX valid distinct picks, or an honest unknown-input response.':'')}],max_tokens:5500,temperature:0.25,response_format:{type:'json_schema',json_schema:schema}}),
     new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('deadline')),remaining);})
   ]);}finally{clearTimeout(timer);}
 }
@@ -94,6 +94,19 @@ export async function verifyBooks(picks,fetcher=fetch){
     return match?[{...p,source_url:'https://openlibrary.org'+match.key,author:match.author_name.find(a=>key(a)===key(p.author_orig)),author_orig:match.author_name.find(a=>key(a)===key(p.author_orig)),fa_published:'unsure'}]:[];
   });
 }
+// Cache only validated successful results; exclusions and discovery level are part of the key.
+export async function responseCache(input,url,cache=globalThis.caches?.default){
+  if(!cache)return null;
+  try{
+    const bytes=new TextEncoder().encode(JSON.stringify([input.first,input.second,input.level,input.exclude]));
+    const hash=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),b=>b.toString(16).padStart(2,'0')).join('');
+    const key=new Request(new URL('/_recommend-cache/v1/'+hash,url));
+    return {
+      async get(){const r=await cache.match(key);if(!r)return null;return json(await r.json());},
+      async put(data){try{await cache.put(key,Response.json(data,{headers:{'Cache-Control':'public, max-age=3600'}}));}catch{}}
+    };
+  }catch{return null;}
+}
 export async function onRequestPost({request,env},fetcher=fetch){
   const origin=request.headers.get('Origin');
   if(origin&&origin!==new URL(request.url).origin)return fail('این درخواست مجاز نیست.',403);
@@ -101,12 +114,15 @@ export async function onRequestPost({request,env},fetcher=fetch){
   try{const raw=await request.text();if(raw.length>22000)return fail('درخواست بیش از حد طولانی است.',413);input=prepare(JSON.parse(raw));}catch{return fail('اطلاعات درخواست نامعتبر است.',400);}
   if(!input)return fail('دو کتاب متفاوت با عنوان معتبر وارد کن.',400);
   if(!env?.AI?.run)return fail('سرویس هوش مصنوعی هنوز فعال نشده است.',503);
+  const cached=await responseCache(input,request.url);
+  if(cached){try{const hit=await cached.get();if(hit)return hit;}catch{}}
+  const finish=async data=>{const payload={response:JSON.stringify(data)};if(cached)await cached.put(payload);return json(payload);};
   let best=null,code='invalid_model_output';
   const deadline=Date.now()+100000;
   for(let attempt=0;attempt<2;attempt++){
     try{
       const result=await generate(env.AI,input,attempt>0,deadline);
-      const parsed=parse(typeof result==='string'?result:result?.response??result?.output);
+      const parsed=parse(typeof result==='string'?result:result?.response??result?.output??result?.choices?.[0]?.message?.content);
       const data=validate(parsed,input);
       code=!parsed?'invalid_json':!data?'invalid_structure':!data.picks.length?'no_valid_picks':'incomplete_picks';
       if(data&&(!data.first.known||!data.second.known))return json({response:JSON.stringify(data)});
@@ -114,7 +130,7 @@ export async function onRequestPost({request,env},fetcher=fetch){
         data.picks=await verifyBooks(data.picks,fetcher);
         const combined=[...(best?.picks||[]),...data.picks],seenWorks=new Set();
         data.picks=combined.filter(p=>{if(seenWorks.has(p.source_url))return false;seenWorks.add(p.source_url);return true;}).slice(0,6);
-        if(data.picks.length===6)return json({response:JSON.stringify(data)});
+        if(data.picks.length===6)return finish(data);
         code='bibliography_unverified';
       }
       if(data&&(!best||data.picks.length>best.picks.length))best=data;
@@ -128,7 +144,7 @@ export async function onRequestPost({request,env},fetcher=fetch){
       return fail('سرویس پیشنهاد کتاب موقتاً در دسترس نیست؛ دوباره امتحان کن.',503);
     }
   }
-  if(best?.picks.length)return json({response:JSON.stringify(best)});
+  if(best?.picks.length)return finish(best);
   return json({error:'پیشنهاد قابل‌اعتمادی دریافت نشد؛ عنوان و نام نویسنده را دقیق‌تر بنویس.',code},502);
 }
 export function onRequestGet(){return new Response(null,{status:405,headers:{Allow:'POST'}});}
