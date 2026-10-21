@@ -139,7 +139,8 @@ export async function onRequestPost({request,env},fetcher=fetch){
         data.picks=await verifyBooks(data.picks,fetcher);
         const combined=[...(best?.picks||[]),...data.picks],seenWorks=new Set();
         data.picks=combined.filter(p=>{if(seenWorks.has(p.source_url))return false;seenWorks.add(p.source_url);return true;}).slice(0,6);
-        if(data.picks.length===6)return finish(data);
+        // Return the first verified batch; the user can request more explicitly.
+        if(data.picks.length>0)return finish(data);
         code='bibliography_unverified';
       }
       if(data&&(!best||data.picks.length>best.picks.length))best=data;

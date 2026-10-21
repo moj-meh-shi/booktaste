@@ -18,10 +18,10 @@ test('unknown input accepted without forced invention or retry',async()=>{let n=
 test('excludes input, previously read and duplicate spellings',async()=>{const g=good();g.picks=[{...pick(),title_fa:'بوف کور'},{...pick(1),title_fa:'مسخ'},pick(2),{...pick(3),title_fa:'کيمياگر'},{...pick(4),title_fa:'کیمیاگر'},pick(5)];const d=await data(await call({...input,exclude:['کتاب 2']},async()=>({response:g})));assert.deepEqual(d.picks.map(x=>x.title_fa),['کيمياگر','کتاب 5']);});
 test('reject incomplete, low confidence and invalid categories',async()=>{const g=good();g.picks=[{...pick(),author:''},{...pick(1),from_second:''},{...pick(2),stars:2},{...pick(3),type:'bogus'},{...pick(4),title_fa:'English'},pick(5)];assert.equal((await data(await call(input,async()=>({response:g})))).picks.length,1);});
 test('invalid output retried at most once',async()=>{let n=0;assert.equal((await call(input,async()=>{n++;return {response:'broken'}})).status,502);assert.equal(n,2);});
-test('repair returns full batch',async()=>{let n=0;const r=await call(input,async()=>({response:++n===1?{...good(),picks:[pick()]}:good()}));assert.equal((await data(r)).picks.length,6);assert.equal(n,2);});
+test('partial verified batch returns without a second generation',async()=>{for(const count of [1,3,5]){let n=0;const r=await call(input,async()=>{n++;return {response:{...good(),picks:good().picks.slice(0,count)}}});assert.equal(r.status,200);assert.equal((await data(r)).picks.length,count);assert.equal(n,1);}});
 test('provider errors are not retried',async()=>{let n=0;assert.equal((await call(input,async()=>{n++;throw new Error('provider')})).status,503);assert.equal(n,1);});
 test('quota error is actionable',async()=>assert.equal((await call(input,async()=>{throw new Error('daily neuron quota exceeded')})).status,429));
-test('partial valid output survives failed repair',async()=>{let n=0;assert.equal((await data(await call(input,async()=>{if(++n===2)throw Error();return {response:{...good(),picks:[pick()]}}}))).picks.length,1);});
+test('no verified matches can still trigger one repair',async()=>{let n=0;const r=await call(input,async()=>({response:++n===1?{...good(),picks:[{...pick(),title_orig:'Unmatched title'}]}:good()}));assert.equal((await data(r)).picks.length,6);assert.equal(n,2);});
 test('legacy frontend supported',async()=>assert.equal((await call({prompt:'کتاب اول: بوف کور\nکتاب دوم: مسخ\n'})).status,200));
 test('GET not supported',()=>assert.equal(onRequestGet().status,405));
 
